@@ -34,7 +34,8 @@ app.use(function(req, res, next) {
 /**
  * Route that returns a token to be used on the client side to tokenize payment details
  */
-app.post('/api/v1/token', function (request, response) {
+app.options('/api/v1/token', cors());  //enable pre-flight request
+app.post('/api/v1/token',cors(), function (request, response) {
   gateway.clientToken.generate({}, function (err, res) {
     if (err) throw err;
     response.json({
@@ -46,7 +47,8 @@ app.post('/api/v1/token', function (request, response) {
 /**
  * Route to process a sale transaction
  */
-app.post('/api/v1/process', jsonParser, function (request, response) {
+app.options('/api/v1/process', cors());  //enable pre-flight request
+app.post('/api/v1/process',cors(), jsonParser, function (request, response) {
   var transaction = request.body;
   gateway.transaction.sale({
     amount: transaction.amount,
