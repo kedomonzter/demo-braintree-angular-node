@@ -4,6 +4,7 @@ var util = require('util');
 var express = require('express');
 var braintree = require('braintree');
 var bodyParser = require('body-parser');
+var cors = require('cors');
 
 /**
  * Instantiate your server and a JSON parser to parse all incoming requests
