@@ -11,15 +11,16 @@ var cors = require('cors');
  */
 var app = express();
 var jsonParser = bodyParser.json();
+var env = 'localhost';
 
 /**
  * Instantiate your gateway (update here with your Braintree API Keys)
  */
 var gateway = braintree.connect({
   environment:  braintree.Environment.Sandbox,
-  merchantId:   '6dr2nwjy8f56mqyt',
-  publicKey:    'yxhwjftm8t34rcmg',
-  privateKey:   '21fa3101d6721f02312a2503985db88c'
+  merchantId:   'h3k4sf2j9rbnd5rg',
+  publicKey:    'sgdwk5jchmnvbbkd',
+  privateKey:   '2f98fed0e793007ac22dcfbc693651a9'
 });
 
 /**
@@ -40,7 +41,8 @@ app.post('/api/v1/token',cors(), function (request, response) {
   gateway.clientToken.generate({}, function (err, res) {
     if (err) throw err;
     response.json({
-      "client_token": res.clientToken
+      "client_token": res.clientToken,
+      "environment" : env
     });
   });
 });
@@ -49,15 +51,26 @@ app.post('/api/v1/token',cors(), function (request, response) {
  * Route to process a sale transaction
  */
 app.options('/api/v1/process', cors());  //enable pre-flight request
-app.post('/api/v1/process',cors(), jsonParser, function (request, response) {
-  var transaction = request.body;
-  gateway.transaction.sale({
-    amount: transaction.amount,
-    paymentMethodNonce: transaction.payment_method_nonce
+app.post('/api/v1/process',cors(),jsonParser, function(req, res) {
+  var plan = '2kh6';
+  var transaction = req.body;
+  console.log('transaction,',transaction);
+  var nonce = transaction.payment_method_nonce;
+
+  gateway.customer.create({
+    paymentMethodNonce: nonce
   }, function (err, result) {
-    if (err) throw err;
-    console.log(util.inspect(result));
-    response.json(result);
+    if (result.success) {
+
+      var token = result.customer.paymentMethods[0].token;
+
+      gateway.subscription.create({
+        paymentMethodToken: token,
+        planId: plan
+      }, function (err, result) {
+        res.json(result);
+      });
+    }
   });
 });
 
